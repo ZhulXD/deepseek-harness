@@ -1,0 +1,30 @@
+name: pack-family
+on: [workflow_dispatch]
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: dsh-v0.1.5-rc.1 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: pnpm/action-setup@v4
+      - name: Install deps
+        run: pnpm install --no-frozen-lockfile
+      - name: Build all packages
+        run: pnpm -r build
+      - name: Pack all workspace packages (flat tarballs)
+        run: |
+          mkdir -p out
+          find . -name package.json -not -path '*/node_modules/*' -not -path './package.json' | while read pj; do
+            d=$(dirname "$pj")
+            name=$(node -p "require('./$pj').name || ''")
+            [ -z "$name" ] && continue
+            echo "packing $name in $d"
+            (cd "$d" && npm pack --pack-destination "$GITHUB_WORKSPACE/out" --silent) || echo "PACK-FAIL $name"
+          done
+          ls out | wc -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: family-tarballs
+          path: out/*.tgz
