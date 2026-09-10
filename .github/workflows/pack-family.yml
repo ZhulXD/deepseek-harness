@@ -14,9 +14,9 @@ jobs:
       - uses: pnpm/action-setup@v4
       - name: Install deps (frozen lockfile from the release tag)
         run: pnpm install --frozen-lockfile
-      - name: Build all packages (web app last, continue on fail)
+      - name: Build all packages (tolerant)
         run: pnpm -r build || true
-      - name: Pack all workspace packages (flat tarballs)
+      - name: Pack all workspace packages (pnpm pack resolves workspace: deps)
         run: |
           mkdir -p out
           find . -name package.json -not -path '*/node_modules/*' -not -path './package.json' | while read pj; do
@@ -24,7 +24,7 @@ jobs:
             name=$(node -p "require('./$pj').name || ''")
             [ -z "$name" ] && continue
             echo "packing $name in $d"
-            (cd "$d" && npm pack --pack-destination "$GITHUB_WORKSPACE/out" --silent) || echo "PACK-FAIL $name"
+            (cd "$d" && pnpm pack --pack-destination "$GITHUB_WORKSPACE/out" 2>/dev/null) || (cd "$d" && npm pack --pack-destination "$GITHUB_WORKSPACE/out" --silent) || echo "PACK-FAIL $name"
           done
           ls out | wc -l
       - uses: actions/upload-artifact@v4
