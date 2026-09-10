@@ -1,5 +1,9 @@
 name: pack-family
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [master]
+    paths: ['.github/workflows/pack-family.yml']
+  workflow_dispatch:
 jobs:
   pack:
     runs-on: ubuntu-latest
@@ -10,13 +14,14 @@ jobs:
           ref: dsh-v0.1.5-rc.1
           fetch-depth: 1
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
+        with:
+          node-version: 22
       - uses: pnpm/action-setup@v4
-      - name: Install deps (frozen lockfile from the release tag)
+      - name: Install deps
         run: pnpm install --frozen-lockfile
-      - name: Build all packages (tolerant)
+      - name: Build all packages
         run: pnpm -r build || true
-      - name: Pack all workspace packages (pnpm pack resolves workspace: deps)
+      - name: Pack all workspace packages
         run: |
           mkdir -p out
           find . -name package.json -not -path '*/node_modules/*' -not -path './package.json' | while read pj; do
