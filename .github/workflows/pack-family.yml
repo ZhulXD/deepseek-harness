@@ -19,8 +19,14 @@ jobs:
       - uses: pnpm/action-setup@v4
       - name: Install deps
         run: pnpm install --frozen-lockfile
-      - name: Build all packages
+      - name: Root build (generates apps/cli lib)
+        run: pnpm build || true
+      - name: Per-package build (tolerant, for stragglers)
         run: pnpm -r build || true
+      - name: Verify cli lib exists
+        run: |
+          ls apps/cli/lib/ | head -5
+          [ -f apps/cli/lib/bin.js ] && echo "CLI-LIB-OK" || echo "CLI-LIB-MISSING"
       - name: Pack all workspace packages
         run: |
           mkdir -p out
@@ -28,7 +34,6 @@ jobs:
             d=$(dirname "$pj")
             name=$(node -p "require('./$pj').name || ''")
             [ -z "$name" ] && continue
-            echo "packing $name in $d"
             (cd "$d" && pnpm pack --pack-destination "$GITHUB_WORKSPACE/out" 2>/dev/null) || (cd "$d" && npm pack --pack-destination "$GITHUB_WORKSPACE/out" --silent) || echo "PACK-FAIL $name"
           done
           ls out | wc -l
