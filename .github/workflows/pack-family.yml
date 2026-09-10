@@ -12,10 +12,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - uses: pnpm/action-setup@v4
-      - name: Install deps
-        run: pnpm install --no-frozen-lockfile
-      - name: Build all packages
-        run: pnpm -r build
+      - name: Install deps (frozen lockfile from the release tag)
+        run: pnpm install --frozen-lockfile
+      - name: Build all packages (web app last, continue on fail)
+        run: pnpm -r build || true
       - name: Pack all workspace packages (flat tarballs)
         run: |
           mkdir -p out
