@@ -1,5 +1,5 @@
 name: pack-family
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 jobs:
   pack:
     runs-on: ubuntu-latest
