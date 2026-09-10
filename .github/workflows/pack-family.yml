@@ -5,7 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { ref: dsh-v0.1.5-rc.1 }
+        with:
+          repository: deepseek-ai/deepseek-harness
+          ref: dsh-v0.1.5-rc.1
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - uses: pnpm/action-setup@v4
